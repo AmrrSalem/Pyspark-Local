@@ -1,193 +1,226 @@
-# PySpark Portable Environment for Big Data Labs
+# PySpark Portable Environment
+
+A portable, self-contained PySpark environment for Big Data laboratory exercises and coursework. This package provides a consistent, reproducible development environment using Python 3.10.11 and PySpark 3.5.3.
 
 ## Overview
-This is a portable PySpark environment designed for Big Data labs. It uses Python 3.10 and PySpark 3.5.3 to avoid compatibility issues with UDFs.
 
-## What's Included
-```
-LocalPySparkNoVmWare_v4/
-├── setup_portable.bat          # Automated setup script
-├── start_pyspark_env.bat       # Environment activation script
-├── notebook_template.ipynb     # Template notebook with examples
-├── pyspark_fix.py             # Helper for Python path configuration
-├── test_udf.py                # UDF test script
-├── SETUP_INSTRUCTIONS.txt     # Detailed instructions
-├── README_PORTABLE.md         # This file
-└── [your .ipynb files]        # Your lab notebooks
-```
+This environment addresses common compatibility issues between Python 3.12+ and PySpark's worker processes, particularly when working with User-Defined Functions (UDFs). By using Python 3.10.11, we ensure stable and reliable execution of PySpark operations in a local development setting.
 
-## Quick Start for Your Colleagues
+## System Requirements
 
-### Prerequisites
-1. **Python 3.10.11** - Direct download: [python-3.10.11-amd64.exe](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe)
-   - **IMPORTANT:** Check "Add Python to PATH" during installation
-2. **Java 17** - Download from https://adoptium.net/
-   - PySpark requires Java to run
+- **Operating System**: Windows 10 or later
+- **Python**: Version 3.10.11 (64-bit)
+  - Download: [python-3.10.11-amd64.exe](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe)
+- **Java**: Version 17
+  - Download: [Adoptium OpenJDK 17](https://adoptium.net/)
+- **Disk Space**: Approximately 500 MB for the virtual environment
 
-### Installation Steps
+## Installation
 
-1. **Copy the folder** to any location on your machine:
-   ```
-   Example: D:\BigDataLabs\LocalPySparkNoVmWare_v4
-   ```
+### 1. Install Prerequisites
 
-2. **Open Command Prompt** and navigate to the folder:
+Before proceeding, ensure both Python 3.10.11 and Java 17 are installed on your system.
+
+**Python Installation:**
+- Download and run the installer
+- **Important**: Check the box "Add Python to PATH" during installation
+- Verify installation: `py -3.10 --version`
+
+**Java Installation:**
+- Download and install OpenJDK 17 from Adoptium
+- Verify installation: `java -version`
+
+### 2. Setup Environment
+
+1. Extract or clone this repository to your desired location
+2. Open Command Prompt and navigate to the directory:
    ```cmd
-   cd D:\BigDataLabs\LocalPySparkNoVmWare_v4
+   cd path\to\Pyspark-Local
    ```
-
-3. **Run the setup script**:
+3. Run the automated setup script:
    ```cmd
    setup_portable.bat
    ```
-   This will:
-   - Create a Python 3.10 virtual environment
-   - Install PySpark 3.5.3 and all dependencies
-   - Register the Jupyter kernel
 
-4. **Start the environment**:
-   ```cmd
-   start_pyspark_env.bat
-   ```
+The setup script will:
+- Create a Python 3.10 virtual environment (`pyspark-310`)
+- Install PySpark 3.5.3 and required dependencies
+- Register a Jupyter kernel named "PySpark-310-Fixed"
+- Verify the installation
 
-5. **Launch Jupyter Notebook**:
-   ```cmd
-   jupyter notebook
-   ```
+### 3. Launch Environment
 
-6. **Select the correct kernel**:
-   - In Jupyter, click on "Kernel" → "Change Kernel" → "PySpark-310-Fixed"
+To start working:
+```cmd
+start_pyspark_env.bat
+```
+
+Then launch Jupyter Notebook:
+```cmd
+jupyter notebook
+```
 
 ## Usage
 
-### Starting a New Notebook
+### Creating a New Notebook
 
-Use the provided `notebook_template.ipynb` as a starting point. It includes:
-- Proper environment setup
-- Common imports
+Use the provided `notebook_template.ipynb` as a starting point. This template includes:
+- Environment configuration code
+- Common PySpark imports
 - Example DataFrame operations
-- Example UDF usage
+- UDF implementation examples
 
-### Required Imports (First Cell)
+### Essential Setup Code
 
-Every notebook should start with this cell:
+Every notebook must begin with this initialization cell:
 
 ```python
 import sys
 import os
 
-# Configure PySpark
+# Configure PySpark to use the correct Python interpreter
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf, col, when, lit
-from pyspark.sql.types import StringType, IntegerType, FloatType
+from pyspark.sql.functions import udf, col, when, lit, sum, count, avg
+from pyspark.sql.types import StringType, IntegerType, FloatType, DoubleType
 
-# Create Spark Session
+# Initialize Spark Session
 spark = SparkSession.builder \
     .appName("Big Data Lab") \
     .master("local[*]") \
     .config("spark.ui.enabled", "false") \
     .getOrCreate()
 
-print(f"Python: {sys.version}")
-print(f"PySpark: {spark.version}")
+# Verify environment
+print(f"Python Version: {sys.version}")
+print(f"PySpark Version: {spark.version}")
 ```
 
-### Working with UDFs
+### Working with User-Defined Functions
+
+Example of creating and using a UDF:
 
 ```python
-# Define your function
-def classify_age(age):
-    if age < 18:
-        return "Minor"
-    elif age < 65:
-        return "Adult"
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
+
+def categorize_value(value):
+    """Categorizes a numeric value into ranges."""
+    if value < 0:
+        return "Negative"
+    elif value < 100:
+        return "Low"
+    elif value < 1000:
+        return "Medium"
     else:
-        return "Senior"
+        return "High"
 
-# Create the UDF
-classify_age_udf = udf(classify_age, StringType())
+# Register the UDF
+categorize_udf = udf(categorize_value, StringType())
 
-# Use the UDF
-df = df.withColumn('age_group', classify_age_udf(col('age')))
+# Apply to DataFrame
+df_categorized = df.withColumn('category', categorize_udf(col('value')))
+```
+
+## Project Structure
+
+```
+Pyspark-Local/
+├── setup_portable.bat          # Automated environment setup
+├── start_pyspark_env.bat       # Environment activation script
+├── notebook_template.ipynb     # Jupyter notebook template
+├── pyspark_fix.py             # Python path configuration helper
+├── README.md                  # This file
+├── SETUP_INSTRUCTIONS.txt     # Quick reference guide
+└── pyspark-310/               # Virtual environment (created during setup)
+    ├── Scripts/
+    └── Lib/
 ```
 
 ## Troubleshooting
 
-### "Python worker exited unexpectedly"
-- Make sure you're using the **PySpark-310-Fixed** kernel
-- Verify the first cell with environment setup was executed
-- Restart the kernel and run all cells from the top
+### Common Issues
 
-### "ModuleNotFoundError: No module named 'pyspark'"
-- Wrong kernel selected
-- Switch to **PySpark-310-Fixed** kernel
+**Error: "Python worker exited unexpectedly (crashed)"**
+- Solution: Ensure you are using the "PySpark-310-Fixed" kernel
+- Verify that the initialization cell was executed
+- Restart the kernel and re-run all cells from the beginning
 
-### "name 'udf' is not defined"
-- Missing imports
-- Run the first cell with all imports
+**Error: "ModuleNotFoundError: No module named 'pyspark'"**
+- Solution: Incorrect kernel selected
+- Change kernel to "PySpark-310-Fixed" via Kernel → Change Kernel menu
 
-### Setup script fails
-- Verify Python 3.10 is installed: `py -3.10 --version`
-- Verify Java is installed: `java -version`
-- Delete `pyspark-310` folder and re-run `setup_portable.bat`
+**Error: "name 'udf' is not defined"**
+- Solution: Import statements missing
+- Execute the initialization cell with all required imports
 
-## Sharing with Others
+**Setup Script Fails**
+- Verify Python 3.10 installation: `py -3.10 --version`
+- Verify Java installation: `java -version`
+- Remove the `pyspark-310` directory and re-run `setup_portable.bat`
 
-### What to Share:
-1. The entire `LocalPySparkNoVmWare_v4` folder
-2. Make sure to include:
-   - `setup_portable.bat`
-   - `start_pyspark_env.bat`
-   - `SETUP_INSTRUCTIONS.txt`
-   - `notebook_template.ipynb`
-   - Your lab notebook files
+### Getting Help
 
-### What NOT to Share:
-- The `pyspark-310` folder (each user creates their own)
-- The `pyspark-easy`, `pyspark-easy-new`, `pyspark-light` folders (old/broken environments)
+If you encounter issues not covered here:
+1. Review `SETUP_INSTRUCTIONS.txt` for detailed setup steps
+2. Verify all system requirements are met
+3. Check that the correct Jupyter kernel is selected
+4. Ensure the initialization cell has been executed
 
-### For Your Colleagues:
-Just tell them to:
-1. Extract the folder
-2. Run `setup_portable.bat`
-3. Follow the prompts
+## Technical Specifications
 
-## Technical Details
-
-- **Python Version**: 3.10.0
-- **PySpark Version**: 3.5.3
-- **Jupyter Kernel Name**: PySpark-310-Fixed
-- **Virtual Environment**: `pyspark-310` (created locally on each machine)
+| Component | Version | Purpose |
+|-----------|---------|---------|
+| Python | 3.10.11 | Base interpreter |
+| PySpark | 3.5.3 | Distributed computing framework |
+| Java | 17 | PySpark runtime requirement |
+| Jupyter | Latest | Notebook interface |
+| Kernel | PySpark-310-Fixed | Isolated execution environment |
 
 ## Why Python 3.10?
 
-Python 3.12 has compatibility issues with PySpark's worker processes, causing UDFs to crash. Python 3.10 is the stable, recommended version for PySpark 3.5.x.
+Python 3.12 introduced changes to the subprocess and pickle modules that are incompatible with PySpark's worker process architecture. This results in "Python worker exited unexpectedly" errors when executing UDFs or other parallel operations. Python 3.10.11 is the recommended stable version for PySpark 3.5.x deployments.
 
-## Files Generated During Setup
+## Distribution and Sharing
 
-```
-pyspark-310/              # Virtual environment (DO NOT share)
-├── Scripts/
-│   ├── python.exe       # Python 3.10 interpreter
-│   ├── jupyter.exe      # Jupyter launcher
-│   └── activate.bat     # Environment activation
-└── Lib/
-    └── site-packages/   # Installed packages
-```
+### For Instructors/Lab Coordinators
 
-## Additional Resources
+To share this environment with students:
 
-- PySpark Documentation: https://spark.apache.org/docs/latest/api/python/
-- Python 3.10 Download: https://www.python.org/downloads/
-- Java Download: https://adoptium.net/
+1. **Via GitHub**: Direct students to clone the repository
+   ```cmd
+   git clone https://github.com/AmrrSalem/Pyspark-Local.git
+   ```
 
-## Support
+2. **Via ZIP File**: Provide a compressed archive of this directory
+   - Students should extract to their preferred location
+   - Run `setup_portable.bat` to initialize
 
-If you encounter issues:
-1. Check SETUP_INSTRUCTIONS.txt
-2. Verify all prerequisites are installed
-3. Delete `pyspark-310` and re-run setup
-4. Check that you're using the PySpark-310-Fixed kernel
+### What to Share
+
+Include these files:
+- All `.bat` scripts
+- `notebook_template.ipynb`
+- `pyspark_fix.py`
+- Documentation files (`.md`, `.txt`)
+
+Do NOT share:
+- The `pyspark-310` directory (auto-generated per machine)
+- Any personal notebook files or data
+
+## References and Resources
+
+- [Apache Spark Documentation](https://spark.apache.org/docs/latest/api/python/)
+- [Python 3.10 Release Information](https://www.python.org/downloads/release/python-31011/)
+- [Adoptium OpenJDK Downloads](https://adoptium.net/)
+- [Jupyter Documentation](https://jupyter-notebook.readthedocs.io/)
+
+## License and Attribution
+
+This environment configuration is provided for educational purposes. PySpark and its dependencies are subject to their respective licenses.
+
+---
+
+**Note**: This is a local development environment intended for learning and coursework. For production deployments, refer to Apache Spark's official deployment documentation.
