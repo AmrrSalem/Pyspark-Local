@@ -130,10 +130,24 @@ df_categorized = df.withColumn('category', categorize_udf(col('value')))
 Pyspark-Local/
 ├── setup_portable.bat          # Automated environment setup
 ├── start_pyspark_env.bat       # Environment activation script
-├── notebook_template.ipynb     # Jupyter notebook template
 ├── pyspark_fix.py             # Python path configuration helper
-├── README.md                  # This file
+├── README_PORTABLE.md         # This file
 ├── SETUP_INSTRUCTIONS.txt     # Quick reference guide
+├── labs/                      # Laboratory notebooks
+│   ├── Data Processing.ipynb
+│   ├── Data_processing_using_PySpark.ipynb
+│   ├── Linear_Regression_short.ipynb
+│   ├── Logistic_Regression_Pyspark.ipynb
+│   ├── Random_Forests.ipynb
+│   ├── notebook_template.ipynb
+│   └── README.md
+├── datasets/                  # Data files for labs
+│   ├── affairs.csv
+│   ├── customer_data.csv
+│   ├── Linear_regression_dataset.csv
+│   ├── Log_Reg_dataset.csv
+│   ├── sample_data.csv
+│   └── README.md
 └── pyspark-310/               # Virtual environment (created during setup)
     ├── Scripts/
     └── Lib/
