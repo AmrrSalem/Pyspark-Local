@@ -1,0 +1,75 @@
+========================================
+PySpark Local Environment - Portable Setup
+========================================
+
+REQUIREMENTS:
+-------------
+1. Python 3.10.11 must be installed on the target machine
+   Direct download: https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe
+   IMPORTANT: Check "Add Python to PATH" during installation
+2. Java 17 (required for PySpark)
+   Download from: https://adoptium.net/
+3. Windows operating system
+
+QUICK SETUP:
+------------
+1. Copy the entire "LocalPySparkNoVmWare_v4" folder to your desired location
+   Example: D:\BigDataLabs\LocalPySparkNoVmWare_v4
+
+2. Open Command Prompt and navigate to the folder:
+   cd D:\BigDataLabs\LocalPySparkNoVmWare_v4
+
+3. Run the automated setup script:
+   setup_portable.bat
+
+4. Start the environment:
+   start_pyspark_env.bat
+
+5. Launch Jupyter Notebook:
+   jupyter notebook
+
+6. In Jupyter, select kernel: "PySpark-310-Fixed"
+
+WHAT GETS INSTALLED:
+--------------------
+- Virtual environment: pyspark-310 (using Python 3.10)
+- PySpark 3.5.3 (compatible with Python 3.10)
+- Jupyter Notebook
+- Required packages: pandas, matplotlib, seaborn, pyarrow, findspark
+
+TROUBLESHOOTING:
+----------------
+If you encounter errors:
+1. Verify Python 3.10 is installed: py -3.10 --version
+2. Verify Java is installed: java -version
+3. Re-run setup_portable.bat
+
+NOTEBOOK USAGE:
+---------------
+Add this to the first cell of every notebook:
+
+```python
+import sys
+import os
+os.environ["PYSPARK_PYTHON"] = sys.executable
+os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import udf, col
+from pyspark.sql.types import StringType, IntegerType, FloatType
+
+spark = SparkSession.builder \
+    .appName("Big Data Lab") \
+    .master("local[*]") \
+    .config("spark.ui.enabled", "false") \
+    .getOrCreate()
+
+print(f"Python: {sys.version}")
+print(f"PySpark: {spark.version}")
+```
+
+NOTES:
+------
+- The pyspark-310 folder can be deleted and recreated by running setup_portable.bat
+- Each user needs to run setup_portable.bat on their own machine
+- Jupyter kernels are registered per-user in Windows AppData
